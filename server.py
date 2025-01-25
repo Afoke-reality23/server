@@ -29,15 +29,14 @@ def handle_connections():
         client_thread.start()
 
 def handle_clients(client_sock,client_port):
-    try:
+    try:                                                                    
         while True:
             data=client_sock.recv(1024).decode()
             #print(f"Data received:{data}")
-            print("name received")
-            recv_data=plain_http_name(data,client_port)
+
+            recv_data=plain_http_name(data,client_port,client_sock)
             name=recv_data["city_name"]
             strpName=name.strip()
-            print(len(strpName))
             if len(strpName) <=0:
                 msg={'Erro':'Sorry Name cannot be empty'}
                 error_msg=json.dumps(msg)
@@ -48,9 +47,7 @@ def handle_clients(client_sock,client_port):
                 cached_data.update(dict([(recv_data["port"],{})]))
             else:
                 pass
-            print("about to fetch")
             response=server_response(recv_data["port"],modiName)
-            print(f"response:{response}")
             if not response:
                 handle_response(data,response[1],client_sock)
                 continue
@@ -64,17 +61,15 @@ def handle_clients(client_sock,client_port):
         client_sock.close()
 
 
-def plain_http_name(data,port):
+def plain_http_name(data,port,sock):
     if '\r\n\r\n' in data:
         request_headers,request_body=data.split('\r\n\r\n',1)
         
-        port_num=str(extract_http_port(request_headers))
-        print("http port",port_num)
+        port_num=str(extract_http_port(request_headers,sock))
         city_name=request_body
         http_data={"port":port_num,
             "city_name":city_name
         }
-        print(http_data)
         return http_data
     else:
         city_name=data
@@ -85,8 +80,15 @@ def plain_http_name(data,port):
   
         
         
-def extract_http_port(head):
+def extract_http_port(head,sock):
     req_line,main_head=head.split('\r\n',1)
+    print(req_line)
+    method=req_line.split(" ")[0]
+    print(method)
+    if method == 'OPTIONS':
+        sock.send(cors_headers.encode())
+        sock.shutdown(socket.SHUT_WR)
+        return
     headers={}
     split_headers=main_head.split('\r\n')
     for heads in split_headers:
@@ -106,11 +108,8 @@ def extract_http_port(head):
         
 def server_response(client_port,modName):
     if client_port in cached_data and modName in cached_data[client_port]:
-        print("sending from cache")
         response=cached_data[client_port][modName]
         return response
-        
-    print("sending direct")
     response=fetch_weather(modName)
     set_cached_data(client_port,response,modName)
     return response
@@ -134,49 +133,20 @@ def fetch_weather(name):
     print('im here now')
     try:
         if current.status_code == 200 and forecast.status_code == 200:
-            print("I got here Cox of 200")
             api_response={
                 'current_response':current.json(),
                 'forecaste_response':forecast.json(),
                 #'location_response':location.json()
             }
             response=json.dumps(api_response)
-            print(f"returned response:{response}")
             return response
         else:
             if current.status_code == 404 and forecast.status_code == 404:
                 msg={'Error':f'{name} does not match city name'}
                 api_response=json.dumps(msg)
-                print(api_response)
                 return api_response
     except Exception as e:
         return f'Error fetching weather data:{str(e)}'
-
-
-
-
-#def validate_invalid_name(name,client_sock):
-    #if len(name) <=0:
-        #msg='name cannot be empty '
-        #temp_headers=cors_headers.replace('Content-Type:application/json\r\n','Content-Type:text/plain\r\n') + '\r\n' + msg
-        #error_msg=temp_headers
-        #client_sock.send(error_msg.encode('utf-8'))
-        #return False
-    #else:
-        #return True
-  
-  
-  
-    
-#def validate_response(respone_msg,client_sock,name):
-    #if not respone_msg:
-        #msg=f'{name} is not a valid name pls enter a valid name'
-        #temp_headers=cors_headers.replace('Content-Type:application/json\r\n','Content-Type:text/plain\r\n') + '\r\n' + msg
-        #error_msg=temp_headers
-        #client_sock.send(error_msg.encode('utf-8'))
-        #return False
-    #else:
-        #return True
     
 
 
