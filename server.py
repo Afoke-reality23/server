@@ -52,8 +52,7 @@ def handle_clients(client_sock,client_port):
             data=client_sock.recv(1024).decode()
             if handle_preflight_requests(data) == 'OPTIONS':
                 option_cors_headers=cors_headers.replace('200 OK','204 No Conent')
-                print(option_cors_headers)
-                client_sock.send(cors_headers.encode())
+                client_sock.send(option_cors_headers.encode())
             recv_data=plain_http_name(data,client_port)
             name=recv_data["city_name"]
             strpName=name.strip()
