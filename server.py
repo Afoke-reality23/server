@@ -17,6 +17,16 @@ cors_headers+='Access-Control-Allow-Origin:*\r\n'
 cors_headers+='Access-Control-Allow-Methods:GET,POST,OPTIONS\r\n'
 cors_headers+='Access-Control-Allow-Headers:Content-Type\r\n'
 cors_headers+='\r\n'
+
+# cors_headers2 = (
+#     "HTTP/1.1 204 No Content\r\n"
+#     "Content-Type: application/json\r\n"
+#     "Access-Control-Allow-Origin: *\r\n"
+#     "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
+#     "Access-Control-Allow-Headers: Content-Type\r\n"
+#     "\r\n"
+# )
+
 def handle_connections():
     while True:
         print('server is listening for connections')
@@ -28,17 +38,27 @@ def handle_connections():
         client_thread=threading.Thread(target=handle_clients,args=(client_sock,client_port))
         client_thread.start()
 
+def handle_preflight_requests(data):
+    if '\r\n\r\n' in data:
+        head,body=data.split('\r\n\r\n',1)
+        request_line=head.split('\r\n',1)[0]
+        method=request_line.split(' ')[0]
+        print(method)
+        return method
+    return False
 def handle_clients(client_sock,client_port):
-    try:                                                                    
+    try:             
         while True:
             data=client_sock.recv(1024).decode()
-            #print(f"Data received:{data}")
-
-            recv_data=plain_http_name(data,client_port,client_sock)
+            if handle_preflight_requests(data) == 'OPTIONS':
+                option_cors_headers=cors_headers.replace('200 OK','204 No Conent')
+                print(option_cors_headers)
+                client_sock.send(cors_headers.encode())
+            recv_data=plain_http_name(data,client_port)
             name=recv_data["city_name"]
             strpName=name.strip()
             if len(strpName) <=0:
-                msg={'Erro':'Sorry Name cannot be empty'}
+                msg={'Error':'Sorry Name cannot be empty'}
                 error_msg=json.dumps(msg)
                 handle_response(data,error_msg,client_sock)
                 continue
@@ -61,15 +81,17 @@ def handle_clients(client_sock,client_port):
         client_sock.close()
 
 
-def plain_http_name(data,port,sock):
+def plain_http_name(data,port):
     if '\r\n\r\n' in data:
         request_headers,request_body=data.split('\r\n\r\n',1)
-        
-        port_num=str(extract_http_port(request_headers,sock))
-        city_name=request_body
+        des_body=json.loads(request_body)
+        city_name=des_body['search']
+        port_num=des_body['clientId']
         http_data={"port":port_num,
             "city_name":city_name
         }
+        print('step 6',http_data)
+        print('step 7','i got here inside plain http')
         return http_data
     else:
         city_name=data
@@ -80,29 +102,30 @@ def plain_http_name(data,port,sock):
   
         
         
-def extract_http_port(head,sock):
-    req_line,main_head=head.split('\r\n',1)
-    print(req_line)
-    method=req_line.split(" ")[0]
-    print(method)
-    if method == 'OPTIONS':
-        sock.send(cors_headers.encode())
-        sock.shutdown(socket.SHUT_WR)
-        return
-    headers={}
-    split_headers=main_head.split('\r\n')
-    for heads in split_headers:
-        if ":" in heads:
-            keys,value=heads.split(":",1)
-            headers.update([(keys,value)])
-    #print("updated headers: ",headers)
-    host=headers.get("Host")
-    base_url=f"http://{host}"
-    rel_url=req_line.split(" ")[1]
-    URL=f"{base_url}{rel_url}"
-    parse_url=urlparse(URL)
-    client_port=parse_qs(parse_url.query).get('client_port')[0]
-    return client_port
+# def extract_http_port(body):
+    
+    # req_line,main_head=head.split('\r\n',1)
+    # # print('inside extract')
+    # headers={}
+    # split_headers=main_head.split('\r\n')
+    # for heads in split_headers:
+    #     if ":" in heads:
+    #         keys,value=heads.split(":",1)
+    #         headers.update([(keys,value)])
+    # #print("updated headers: ",headers)
+    # host=headers.get("Host")
+    # print(host,'hoset header print')
+    # base_url=f"http://{host}"
+    # print('setp 10')
+    # rel_url=req_line.split(" ")[1]
+    # print('setp 11')
+    # URL=f"{base_url}{rel_url}"
+    # print('setp 12')
+    # parse_url=urlparse(URL)
+    # print(parse_url)
+    # client_port=parse_qs(parse_url.query).get('client_port')[0]
+    # print(client_port,'client port print')
+    # return client_port
  
     
         
@@ -130,7 +153,6 @@ def fetch_weather(name):
     forecast=requests.get(forcast_url)
     #location=requests.get(location_url,headers=headers)
     #print(location.status_code)
-    print('im here now')
     try:
         if current.status_code == 200 and forecast.status_code == 200:
             api_response={
