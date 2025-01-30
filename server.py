@@ -46,6 +46,7 @@ def handle_clients(client_sock,client_port):
                 print('im here')
             print('i dey here too')
             recv_data=plain_http_name(data,client_port)
+            print(recv_data)
             name=recv_data["city_name"]
             strpName=name.strip()
             if len(strpName) <=0:
