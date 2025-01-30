@@ -59,6 +59,7 @@ def handle_clients(client_sock,client_port):
                 cached_data.update(dict([(recv_data["port"],{})]))
             else:
                 pass
+            print('almost close')
             response=server_response(recv_data["port"],modiName)
             if not response:
                 handle_response(data,response[1],client_sock)
