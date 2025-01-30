@@ -63,7 +63,7 @@ def handle_clients(client_sock,client_port):
             handle_response(data,response,client_sock)
             
     except Exception as e:
-        print(f'Error handling client :{e}')
+        #print(f'Error handling client :{e}')
     finally:
         client_sock.close()
 
