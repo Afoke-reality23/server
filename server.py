@@ -133,6 +133,7 @@ def handle_response(data,response,client_sock):
     if '\r\n\r\n' in data:
         full_response=cors_headers + '\r\n' + response
         client_sock.send(full_response.encode("utf-8"))
+        print("message sent successfully ")
         client_sock.shutdown(socket.SHUT_WR)
     else:
         full_response=response
