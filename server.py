@@ -16,16 +16,9 @@ cors_headers+='Content-Type:application/json\r\n'
 cors_headers+='Access-Control-Allow-Origin:*\r\n'
 cors_headers+='Access-Control-Allow-Methods:GET,POST,OPTIONS\r\n'
 cors_headers+='Access-Control-Allow-Headers:Content-Type\r\n'
+cors_headers+='Acces-Control-Max-Age:86400\r\n'
 cors_headers+='\r\n'
 
-# cors_headers2 = (
-#     "HTTP/1.1 204 No Content\r\n"
-#     "Content-Type: application/json\r\n"
-#     "Access-Control-Allow-Origin: *\r\n"
-#     "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
-#     "Access-Control-Allow-Headers: Content-Type\r\n"
-#     "\r\n"
-# )
 
 def handle_connections():
     while True:
@@ -71,9 +64,7 @@ def handle_clients(client_sock,client_port):
                 handle_response(data,response[1],client_sock)
                 continue
             handle_response(data,response,client_sock)
-            #client_sock.shutdown(socket.SHUT_WR)
-            #print("I'm here now")
-            
+            print('messeg finaly sent')
     except Exception as e:
         print(f'Error handling client :{e}')
     finally:
@@ -100,34 +91,6 @@ def plain_http_name(data,port):
         return plain_data
   
         
-        
-# def extract_http_port(body):
-    
-    # req_line,main_head=head.split('\r\n',1)
-    # # print('inside extract')
-    # headers={}
-    # split_headers=main_head.split('\r\n')
-    # for heads in split_headers:
-    #     if ":" in heads:
-    #         keys,value=heads.split(":",1)
-    #         headers.update([(keys,value)])
-    # #print("updated headers: ",headers)
-    # host=headers.get("Host")
-    # print(host,'hoset header print')
-    # base_url=f"http://{host}"
-    # print('setp 10')
-    # rel_url=req_line.split(" ")[1]
-    # print('setp 11')
-    # URL=f"{base_url}{rel_url}"
-    # print('setp 12')
-    # parse_url=urlparse(URL)
-    # print(parse_url)
-    # client_port=parse_qs(parse_url.query).get('client_port')[0]
-    # print(client_port,'client port print')
-    # return client_port
- 
-    
-        
 def server_response(client_port,modName):
     if client_port in cached_data and modName in cached_data[client_port]:
         response=cached_data[client_port][modName]
@@ -147,17 +110,14 @@ def fetch_weather(name):
     base_url='http://api.weatherapi.com/v1/'
     current_url=f'{base_url}current.json?key={api_Key}&q={name}'
     forcast_url=f'{base_url}forecast.json?key={api_Key}&q={name}&alerts=yes&aqi=yes&days=5'
-    #location_url=f"https://nominatim.openstreetmap.org/search?q={name}&limit=1&format=json"
     current=requests.get(current_url)
     forecast=requests.get(forcast_url)
-    #location=requests.get(location_url,headers=headers)
-    #print(location.status_code)
+ 
     try:
         if current.status_code == 200 and forecast.status_code == 200:
             api_response={
                 'current_response':current.json(),
-                'forecaste_response':forecast.json(),
-                #'location_response':location.json()
+                'forecast_response':forecast.json(),
             }
             response=json.dumps(api_response)
             return response
@@ -173,9 +133,7 @@ def fetch_weather(name):
 
 
 def set_cached_data(port,data,name):
-    #print(name)
     client_private_cache=dict([(name,data)])
-    #print(client_private_cache)
     cached_data[port].update(client_private_cache)
 
 def handle_response(data,response,client_sock):
@@ -187,7 +145,6 @@ def handle_response(data,response,client_sock):
         full_response=response
         client_sock.send(full_response.encode("utf-8"))
         print("message sent successfully ")
-        #client_sock.shutdown(socket.SHUT_WR)
     
         
       
