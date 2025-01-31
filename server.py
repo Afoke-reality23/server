@@ -16,9 +16,8 @@ cors_headers+='Content-Type:application/json\r\n'
 cors_headers+='Access-Control-Allow-Origin:*\r\n'
 cors_headers+='Access-Control-Allow-Methods:GET,POST,OPTIONS\r\n'
 cors_headers+='Access-Control-Allow-Headers:Content-Type\r\n'
-cors_headers+='Acces-Control-Max-Age:86400\r\n'
+cors_headers+='Access-Control-Max-Age:86400\r\n'
 cors_headers+='\r\n'
-
 
 def handle_connections():
     while True:
