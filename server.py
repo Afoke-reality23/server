@@ -87,8 +87,8 @@ def reciev_full_data(sock):
             sock.close()
             return
         header,remaining=headers.split('\r\n\r\n',1)
-        print(type(header),len(header))
         content_length=0
+        print("HEADER PRINT===>",header)
         for line in header.split('\r\n'):
             if line.lower().startswith('content-length:'):
                 content_length=line.split(':')[1].strip()
