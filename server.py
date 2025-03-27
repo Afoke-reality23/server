@@ -42,12 +42,7 @@ def handle_connections():
 
 def handle_clients(client_sock,addr):
     try:
-        while True:
-            data=reciev_full_data(client_sock)
-            if data.startswith('OPTIONS'):
-                client_sock.send(preflight_headers.encode('utf-8'))
-                client_sock.close()
-                continue
+        data=reciev_full_data(client_sock)
         print(f'client with  IP address {str(addr[0])} | port {str(addr[1])} has connected successfully')
         print(data)
         req_city=extractdata(data,addr)
@@ -80,18 +75,18 @@ def handle_clients(client_sock,addr):
 
 def reciev_full_data(sock):
     try:
-        print("ABOUT TO RECEIVE DATA")
         headers=''
         while "\r\n\r\n" not in headers:
             chunk=sock.recv(1024).decode()
             if not chunk:
                 return None
             headers+=chunk
-        print("SPLITING THE HEAD FRORM THE BODY")
+            if headers.startswith('OPTIONS'):
+                sock.send(preflight_headers.encode('utf-8'))
+                sock.close()
+                continue
         header,remaining=headers.split('\r\n\r\n',1)
-        print("sSUCCESSFULLY SPLITED")
         content_length=0
-        print("HEADER PRINT===>",repr(header))
         for line in header.split('\r\n'):
             if line.lower().startswith('content-length:'):
                 content_length=line.split(':')[1].strip()
@@ -105,7 +100,7 @@ def reciev_full_data(sock):
             remaining_byte=int(content_length)-len(body)
             body+=chunk[:remaining_byte]
         print("body",repr(body))
-        response=header + '\r\n\r\n'+ body
+        response=header + '\r\n\r\n' + body
         return response
     except Exception as error:
         print(error)
