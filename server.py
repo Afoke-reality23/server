@@ -37,6 +37,7 @@ def handle_connections():
         print('server is listening for real connections')
         client_sock,addr=server.accept()
         client_thread=threading.Thread(target=handle_clients,args=(client_sock,addr))
+        client_sock.close()
         client_thread.start()
 
 
@@ -109,6 +110,7 @@ def reciev_full_data(sock):
         return response
     except Exception as error:
         print(error)
+        traceback.print_exc()
 
 
 def extractdata(data,port):
