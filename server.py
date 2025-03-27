@@ -25,7 +25,7 @@ cors_headers=(
 )
 
 preflight_headers=(
-    "HTTP/1.1 No Content\r\n"
+    "HTTP/1.1 204 No Content\r\n"
     "Access-Control-Allow-Methods:GET,POST,OPTIONS\r\n"
     "Access-Control-Allow-Origin:*\r\n"
     "Access-Control-Allow-Headers:Content-Type\r\n"
