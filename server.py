@@ -47,6 +47,7 @@ def handle_clients(client_sock,addr):
             data=reciev_full_data(client_sock)
             if data.startswith('OPTIONS'):
                 client_sock.send(preflight_headers.encode('utf-8'))
+                client_sock.close()
                 continue
         print(f'client with  IP address {str(addr[0])} | port {str(addr[1])} has connected successfully')
         print(data)
