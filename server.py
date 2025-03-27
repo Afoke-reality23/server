@@ -44,34 +44,43 @@ def handle_connections():
 def handle_clients(client_sock,addr):
     try:
         while True:
-            data=reciev_full_data(client_sock)
+            data=client_sock.recv(1024).decode()
             if data.startswith('OPTIONS'):
                 client_sock.send(preflight_headers.encode('utf-8'))
-                #client_sock.close()
+                # client_sock.close()
                 continue
-        print(f'client with  IP address {str(addr[0])} | port {str(addr[1])} has connected successfully')
-        print(data)
-        req_city=extractdata(data,addr)
-        name=req_city["city_name"]
-        strpName=name.strip()
-        print(strpName)
-        if len(strpName) <=0:
-            msg={'Error':'Sorry Name cannot be empty'}
-            error_msg=json.dumps(msg)
-            handle_response(data,error_msg,client_sock)
-            return
-        modiName=req_city["city_name"].capitalize()
-        if req_city["port"] not in cached_data:
-            cached_data.update(dict([(req_city["port"],{})]))
-        else:
-            pass
-        response=server_response(req_city["port"],modiName)
-        print(response)
-        if response is None:
-            handle_response(data,response[1],client_sock)
-            return
-        handle_response(data,response,client_sock)
-        print('message sent successfully')
+            msg='hey i got your messge hope mine got through too'
+            response=json.dumps(msg)
+            handle_response(data,response,client_sock)
+        # while True:
+        #     data=reciev_full_data(client_sock)
+        #     if data.startswith('OPTIONS'):
+        #         client_sock.send(preflight_headers.encode('utf-8'))
+        #         #client_sock.close()
+        #         continue
+        # print(f'client with  IP address {str(addr[0])} | port {str(addr[1])} has connected successfully')
+        # print(data)
+        # req_city=extractdata(data,addr)
+        # name=req_city["city_name"]
+        # strpName=name.strip()
+        # print(strpName)
+        # if len(strpName) <=0:
+        #     msg={'Error':'Sorry Name cannot be empty'}
+        #     error_msg=json.dumps(msg)
+        #     handle_response(data,error_msg,client_sock)
+        #     return
+        # modiName=req_city["city_name"].capitalize()
+        # if req_city["port"] not in cached_data:
+        #     cached_data.update(dict([(req_city["port"],{})]))
+        # else:
+        #     pass
+        # response=server_response(req_city["port"],modiName)
+        # print(response)
+        # if response is None:
+        #     handle_response(data,response[1],client_sock)
+        #     return
+        # handle_response(data,response,client_sock)
+        # print('message sent successfully')
     except Exception as e:
         print(f"An Error Occurred :{e}")
         traceback.print_exc()
