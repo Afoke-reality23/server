@@ -43,7 +43,7 @@ def handle_connections():
 def handle_clients(client_sock,addr):
     try:
         while True:
-            data=reciev_full_data()
+            data=reciev_full_data(client_sock)
             if data.startswith('OPTIONS'):
                 client_sock.send(preflight_headers.encode('utf-8'))
                 continue
