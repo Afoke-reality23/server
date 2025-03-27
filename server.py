@@ -47,7 +47,6 @@ def handle_clients(client_sock,addr):
             data=client_sock.recv(1024).decode()
             if data.startswith('OPTIONS'):
                 client_sock.send(preflight_headers.encode('utf-8'))
-                # client_sock.close()
                 continue
             msg='hey i got your messge hope mine got through too'
             response=json.dumps(msg)
