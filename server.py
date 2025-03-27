@@ -37,7 +37,6 @@ def handle_connections():
         print('server is listening for real connections')
         client_sock,addr=server.accept()
         client_thread=threading.Thread(target=handle_clients,args=(client_sock,addr))
-        client_sock.close()
         client_thread.start()
 
 
@@ -52,7 +51,7 @@ def handle_clients(client_sock,addr):
         response=json.dumps(msg)
         full_msg=cors_headers + response
         client_sock.send(full_msg.encode('utf-8'))
-            # handle_response(data,response,client_sock)
+        # handle_response(data,response,client_sock)
         # while True:
         #     data=reciev_full_data(client_sock)
         #     if data.startswith('OPTIONS'):
