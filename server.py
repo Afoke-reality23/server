@@ -85,6 +85,7 @@ def reciev_full_data(sock):
             headers+=chunk
             if headers.startswith('OPTIONS'):
                 sock.send(preflight_headers.encode("utf-8"))
+                headers=''
                 continue
         print("SPLITING THE HEAD FRORM THE BODY")
         header,remaining=headers.split('\r\n\r\n',1)
