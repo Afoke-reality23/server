@@ -42,7 +42,11 @@ def handle_connections():
 
 def handle_clients(client_sock,addr):
     try:
-        data=reciev_full_data(client_sock)
+        while True:
+            data=reciev_full_data()
+            if data.startswith('OPTIONS'):
+                client_sock.send(preflight_headers.encode('utf-8'))
+                continue
         print(f'client with  IP address {str(addr[0])} | port {str(addr[1])} has connected successfully')
         print(data)
         req_city=extractdata(data,addr)
@@ -83,10 +87,6 @@ def reciev_full_data(sock):
             if not chunk:
                 return None
             headers+=chunk
-            if headers.startswith('OPTIONS'):
-                sock.send(preflight_headers.encode("utf-8"))
-                headers=''
-                continue
         print("SPLITING THE HEAD FRORM THE BODY")
         header,remaining=headers.split('\r\n\r\n',1)
         print("sSUCCESSFULLY SPLITED")
