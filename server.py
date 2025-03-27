@@ -76,19 +76,21 @@ def handle_clients(client_sock,addr):
 
 def reciev_full_data(sock):
     try:
-        print("about to receiving data")
+        print("ABOUT TO RECEIVE DATA")
         headers=''
         while "\r\n\r\n" not in headers:
             chunk=sock.recv(1024).decode()
             if not chunk:
                 return None
             headers+=chunk
-        print("head received")
+        print("HEAD RECEIVED")
         if headers.startswith('OPTIONS'):
             sock.send(preflight_headers.encode("utf-8"))
             sock.close()
             return
+        print("SPLITING THE HEAD FRORM THE BODY")
         header,remaining=headers.split('\r\n\r\n',1)
+        print("sSUCCESSFULLY SPLITED")
         content_length=0
         print("HEADER PRINT===>",repr(header))
         for line in header.split('\r\n'):
