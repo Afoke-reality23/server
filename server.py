@@ -84,7 +84,7 @@ def handle_clients(client_sock,addr):
         print(f"An Error Occurred :{e}")
         traceback.print_exc()
     finally:
-        client_sock.close()
+        # client_sock.close()
   
 
 
