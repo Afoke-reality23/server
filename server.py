@@ -83,11 +83,10 @@ def reciev_full_data(sock):
             if not chunk:
                 return None
             headers+=chunk
-        print("HEAD RECEIVED")
             if headers.startswith('OPTIONS'):
                 sock.send(preflight_headers.encode("utf-8"))
                 sock.close()
-                return
+                continue
         print("SPLITING THE HEAD FRORM THE BODY")
         header,remaining=headers.split('\r\n\r\n',1)
         print("sSUCCESSFULLY SPLITED")
