@@ -48,10 +48,10 @@ def handle_clients(client_sock,addr):
             if data.startswith('OPTIONS'):
                 client_sock.send(preflight_headers.encode('utf-8'))
                 continue
-            msg='hey i got your messge hope mine got through too'
-            response=json.dumps(msg)
-            full_msg=cors_headers + response
-            client_sock.send(full_msg.encode('utf-8'))
+        msg='hey i got your messge hope mine got through too'
+        response=json.dumps(msg)
+        full_msg=cors_headers + response
+        client_sock.send(full_msg.encode('utf-8'))
             # handle_response(data,response,client_sock)
         # while True:
         #     data=reciev_full_data(client_sock)
