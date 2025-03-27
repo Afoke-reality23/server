@@ -50,7 +50,9 @@ def handle_clients(client_sock,addr):
                 continue
             msg='hey i got your messge hope mine got through too'
             response=json.dumps(msg)
-            handle_response(data,response,client_sock)
+            full_msg=cors_headers + response
+            client_sock.send(full_msg.encode('utf-8'))
+            # handle_response(data,response,client_sock)
         # while True:
         #     data=reciev_full_data(client_sock)
         #     if data.startswith('OPTIONS'):
@@ -87,119 +89,119 @@ def handle_clients(client_sock,addr):
   
 
 
-def reciev_full_data(sock):
-    try:
-        print("ABOUT TO RECEIVE DATA")
-        headers=''
-        while "\r\n\r\n" not in headers:
-            chunk=sock.recv(1024).decode()
-            if not chunk:
-                return None
-            headers+=chunk
-        print("SPLITING THE HEAD FRORM THE BODY")
-        header,remaining=headers.split('\r\n\r\n',1)
-        print("sSUCCESSFULLY SPLITED")
-        content_length=0
-        print("HEADER PRINT===>",repr(header))
-        for line in header.split('\r\n'):
-            if line.lower().startswith('content-length:'):
-                content_length=line.split(':')[1].strip()
-                break
-        body=remaining if len(remaining) > 0 else "".strip()
-        while len(body) < int(content_length):
-            chunk=sock.recv(1024).decode()
-            if not chunk:
-                print("empty chunk")
-                break
-            remaining_byte=int(content_length)-len(body)
-            body+=chunk[:remaining_byte]
-        print("body",repr(body))
-        response=header + '\r\n\r\n'+ body
-        return response
-    except Exception as error:
-        print(error)
-        traceback.print_exc()
+# def reciev_full_data(sock):
+#     try:
+#         print("ABOUT TO RECEIVE DATA")
+#         headers=''
+#         while "\r\n\r\n" not in headers:
+#             chunk=sock.recv(1024).decode()
+#             if not chunk:
+#                 return None
+#             headers+=chunk
+#         print("SPLITING THE HEAD FRORM THE BODY")
+#         header,remaining=headers.split('\r\n\r\n',1)
+#         print("sSUCCESSFULLY SPLITED")
+#         content_length=0
+#         print("HEADER PRINT===>",repr(header))
+#         for line in header.split('\r\n'):
+#             if line.lower().startswith('content-length:'):
+#                 content_length=line.split(':')[1].strip()
+#                 break
+#         body=remaining if len(remaining) > 0 else "".strip()
+#         while len(body) < int(content_length):
+#             chunk=sock.recv(1024).decode()
+#             if not chunk:
+#                 print("empty chunk")
+#                 break
+#             remaining_byte=int(content_length)-len(body)
+#             body+=chunk[:remaining_byte]
+#         print("body",repr(body))
+#         response=header + '\r\n\r\n'+ body
+#         return response
+#     except Exception as error:
+#         print(error)
+#         traceback.print_exc()
 
 
-def extractdata(data,port):
-    if '\r\n\r\n' in data:
-        print('if statment passed')
-        head,body=data.split("\r\n\r\n",1)
-        try:
-            print('insited extraction functon',repr(body))
-            parse_body=json.loads(body)
-            city_name=parse_body.get('city'," ")
-            port_id=parse_body['clientId']
-            http_data={
-            "city_name":city_name,
-            "port":port_id
-            }
-            # print('http data',http_data)
-            return http_data
-        except json.JSONDecodeError as error:
-            print(error)
-    else:
-        print(data)
-        city_name=data
-        plain_data={"port":port,
-            "city_name":city_name
-        }
-        return plain_data
+# def extractdata(data,port):
+#     if '\r\n\r\n' in data:
+#         print('if statment passed')
+#         head,body=data.split("\r\n\r\n",1)
+#         try:
+#             print('insited extraction functon',repr(body))
+#             parse_body=json.loads(body)
+#             city_name=parse_body.get('city'," ")
+#             port_id=parse_body['clientId']
+#             http_data={
+#             "city_name":city_name,
+#             "port":port_id
+#             }
+#             # print('http data',http_data)
+#             return http_data
+#         except json.JSONDecodeError as error:
+#             print(error)
+#     else:
+#         print(data)
+#         city_name=data
+#         plain_data={"port":port,
+#             "city_name":city_name
+#         }
+#         return plain_data
     
-def server_response(addr,modName):
-    if addr in cached_data and modName in cached_data[addr]:
-        response=cached_data[addr][modName]
-        return response
-    response=fetch_weather(modName)
-    set_cached_data(addr,response,modName)
-    return response
+# def server_response(addr,modName):
+#     if addr in cached_data and modName in cached_data[addr]:
+#         response=cached_data[addr][modName]
+#         return response
+#     response=fetch_weather(modName)
+#     set_cached_data(addr,response,modName)
+#     return response
 
 
-def fetch_weather(name):
-    headers={
-        'User-Agent':'MyweatherApp/1.0(ighoafokereality1@gmail.com)'
-    }
-    api_Key='66797e10ae014d3986b214726242212'
-    base_url='http://api.weatherapi.com/v1/'
-    current_url=f'{base_url}current.json?key={api_Key}&q={name}'
-    forcast_url=f'{base_url}forecast.json?key={api_Key}&q={name}&alerts=yes&aqi=yes&days=5'
-    current=requests.get(current_url)
-    forecast=requests.get(forcast_url)
-    try:
-        if current.status_code == 200 and forecast.status_code == 200:
-            api_response={
-                'current_response':current.json(),
-                'forecast_response':forecast.json()
-            }
-            response=json.dumps(api_response)
-            return response
-        else:
-            if current.status_code == 404 and forecast.status_code == 404:
-                msg={'Error':f'{name} does not match city name'}
-                api_response=json.dumps(msg)
-                return api_response
-    except Exception as e:
-        return f'Error fetching weather data:{str(e)}'
+# def fetch_weather(name):
+#     headers={
+#         'User-Agent':'MyweatherApp/1.0(ighoafokereality1@gmail.com)'
+#     }
+#     api_Key='66797e10ae014d3986b214726242212'
+#     base_url='http://api.weatherapi.com/v1/'
+#     current_url=f'{base_url}current.json?key={api_Key}&q={name}'
+#     forcast_url=f'{base_url}forecast.json?key={api_Key}&q={name}&alerts=yes&aqi=yes&days=5'
+#     current=requests.get(current_url)
+#     forecast=requests.get(forcast_url)
+#     try:
+#         if current.status_code == 200 and forecast.status_code == 200:
+#             api_response={
+#                 'current_response':current.json(),
+#                 'forecast_response':forecast.json()
+#             }
+#             response=json.dumps(api_response)
+#             return response
+#         else:
+#             if current.status_code == 404 and forecast.status_code == 404:
+#                 msg={'Error':f'{name} does not match city name'}
+#                 api_response=json.dumps(msg)
+#                 return api_response
+#     except Exception as e:
+#         return f'Error fetching weather data:{str(e)}'
     
 
 
 
-def set_cached_data(port,data,name):
-    client_private_cache=dict([(name,data)])
-    cached_data[port].update(client_private_cache)
+# def set_cached_data(port,data,name):
+#     client_private_cache=dict([(name,data)])
+#     cached_data[port].update(client_private_cache)
 
-def handle_response(data,response,client_sock):
-    try:
-        if '\r\n\r\n' in data:
-            full_response=cors_headers+response
-            #print('full response',full_response)
-            client_sock.send(full_response.encode("utf-8"))
-            client_sock.shutdown(socket.SHUT_WR)
-        else:
-            full_response=response
-            client_sock.send(full_response.encode("utf-8"))
-    except Exception as error:
-        print(error)    
+# def handle_response(data,response,client_sock):
+#     try:
+#         if '\r\n\r\n' in data:
+#             full_response=cors_headers+response
+#             #print('full response',full_response)
+#             client_sock.send(full_response.encode("utf-8"))
+#             client_sock.shutdown(socket.SHUT_WR)
+#         else:
+#             full_response=response
+#             client_sock.send(full_response.encode("utf-8"))
+#     except Exception as error:
+#         print(error)    
     
         
       
